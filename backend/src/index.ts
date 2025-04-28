@@ -1,13 +1,9 @@
-import { Socket } from "socket.io";
-import http from "http";
-
 import express from 'express';
-import { Server } from 'socket.io';
-import { UserManager } from "./managers/UserManger";
-
 const app = express();
-const server = http.createServer(http);
-
+import http from 'http';
+const server = http.createServer(app);
+import { Server } from "socket.io";
+import { UserManager } from './managers/UserManager';
 const io = new Server(server, {
   cors: {
     origin: "*"
@@ -16,15 +12,31 @@ const io = new Server(server, {
 
 const userManager = new UserManager();
 
-io.on('connection', (socket: Socket) => {
+io.on('connection', (socket) => {
   console.log('a user connected');
-  userManager.addUser("randomName", socket);
+  userManager.addUser(socket)
   socket.on("disconnect", () => {
-    console.log("user disconnected");
+    console.log('Disconnected');
     userManager.removeUser(socket.id);
   })
 });
 
 server.listen(3000, () => {
-    console.log('listening on *:3000');
+  console.log('listening on :3000');
 });
+
+const url = `https://omegle-clone-68e8.onrender.com/`;
+const interval = 300000;
+
+function reloadWebsite() {
+  fetch(url, { method: 'GET' })
+    .then(response => {
+      console.log(`Reloaded at ${new Date().toISOString()}: Status Code ${response.status}`);
+    })
+    .catch(error => {
+      console.error(`Error reloading at ${new Date().toISOString()}:`, error.message);
+    });
+}
+
+
+setInterval(reloadWebsite, interval);
