@@ -1,5 +1,4 @@
 import { useEffect, useRef, useState } from "react"
-import { Link } from "react-router-dom";
 import { Room } from "./Room";
 
 export const Landing = () => {
@@ -35,8 +34,8 @@ export const Landing = () => {
     }, [videoRef]);
 
     if (!joined) {
-            
-    return <div>
+
+        return <div>
             <video autoPlay ref={videoRef}></video>
             <input type="text" onChange={(e) => {
                 setName(e.target.value);
