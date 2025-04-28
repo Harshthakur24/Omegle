@@ -1,5 +1,20 @@
 import { useEffect, useRef, useState } from "react";
 import { Socket, io } from "socket.io-client";
+import { BsCameraVideo, BsCameraVideoOff, BsMic, BsMicMute } from "react-icons/bs";
+import { IoMdRefresh } from "react-icons/io";
+import {
+    RoomContainer,
+    VideoContainer,
+    VideoWrapper,
+    Video,
+    Header,
+    Title,
+    LobbyMessage,
+    Spinner,
+    ControlsContainer,
+    ControlButton,
+    NextButton
+} from "../styles/Room.styles";
 
 const URL = "http://localhost:3000";
 
@@ -11,23 +26,19 @@ declare global {
 }
 
 export const Room = ({
-    name,
     localAudioTrack,
     localVideoTrack
 }: {
-    name: string,
     localAudioTrack: MediaStreamTrack | null,
     localVideoTrack: MediaStreamTrack | null,
 }) => {
     const [lobby, setLobby] = useState(true);
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const [socket, setSocket] = useState<null | Socket>(null);
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const [sendingPc, setSendingPc] = useState<null | RTCPeerConnection>(null);
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const [receivingPc, setReceivingPc] = useState<null | RTCPeerConnection>(null);
+    const [isAudioEnabled, setIsAudioEnabled] = useState(true);
+    const [isVideoEnabled, setIsVideoEnabled] = useState(true);
 
-    // Initialize refs with null
     const remoteVideoRef = useRef<HTMLVideoElement | null>(null);
     const localVideoRef = useRef<HTMLVideoElement | null>(null);
 
@@ -189,13 +200,67 @@ export const Room = ({
         }
     }, [localVideoRef, localVideoTrack]);
 
+    const handleNextPerson = () => {
+        // Implement the logic to find next person
+        setLobby(true);
+        // Disconnect current peer and look for new one
+    };
+
+    const toggleAudio = () => {
+        if (localAudioTrack) {
+            localAudioTrack.enabled = !localAudioTrack.enabled;
+            setIsAudioEnabled(!isAudioEnabled);
+        }
+    };
+
+    const toggleVideo = () => {
+        if (localVideoTrack) {
+            localVideoTrack.enabled = !localVideoTrack.enabled;
+            setIsVideoEnabled(!isVideoEnabled);
+        }
+    };
+
     return (
-        <div>
-            Hi {name}
-            <video autoPlay width={400} height={400} ref={localVideoRef} />
-            {lobby && "Waiting to connect you to someone"}
-            <video autoPlay width={400} height={400} ref={remoteVideoRef} />
-        </div>
+        <RoomContainer>
+            <Header>
+                <Title>Random Chat</Title>
+                <NextButton onClick={handleNextPerson}>
+                    <IoMdRefresh size={20} style={{ marginRight: '8px' }} />
+                    Next Person
+                </NextButton>
+            </Header>
+
+            <VideoContainer>
+                <VideoWrapper>
+                    <Video ref={localVideoRef} autoPlay muted playsInline />
+                    <ControlsContainer>
+                        <ControlButton
+                            onClick={toggleAudio}
+                            isActive={isAudioEnabled}
+                            title={isAudioEnabled ? "Mute Audio" : "Unmute Audio"}
+                        >
+                            {isAudioEnabled ? <BsMic size={20} /> : <BsMicMute size={20} />}
+                        </ControlButton>
+                        <ControlButton
+                            onClick={toggleVideo}
+                            isActive={isVideoEnabled}
+                            title={isVideoEnabled ? "Turn Off Camera" : "Turn On Camera"}
+                        >
+                            {isVideoEnabled ? <BsCameraVideo size={20} /> : <BsCameraVideoOff size={20} />}
+                        </ControlButton>
+                    </ControlsContainer>
+                </VideoWrapper>
+
+                <VideoWrapper>
+                    <Video ref={remoteVideoRef} autoPlay playsInline />
+                </VideoWrapper>
+            </VideoContainer>
+
+            <LobbyMessage visible={lobby}>
+                <Spinner />
+                <p>Looking for someone to chat with...</p>
+            </LobbyMessage>
+        </RoomContainer>
     );
 }
 
