@@ -1,4 +1,4 @@
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { HashRouter as Router, Routes, Route } from 'react-router-dom';
 import { Room } from './components/Room';
 import { useState, useEffect } from 'react';
 
@@ -25,7 +25,7 @@ function App() {
         localStream.getTracks().forEach(track => track.stop());
       }
     };
-  }, []);
+  }, [localStream]);
 
   return (
     <Router>
