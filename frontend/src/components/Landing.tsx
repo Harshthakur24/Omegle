@@ -1,30 +1,52 @@
-import { useEffect, useState } from "react"
+import { useEffect, useRef, useState } from "react"
+import { Link } from "react-router-dom";
 import { Room } from "./Room";
 
-export function Landing() {
-    const [localStream, setLocalStream] = useState<MediaStream | null>(null);
+export const Landing = () => {
+    const [name, setName] = useState("");
     const [localAudioTrack, setLocalAudioTrack] = useState<MediaStreamTrack | null>(null);
-    const [localVideoTrack, setLocalVideoTrack] = useState<MediaStreamTrack | null>(null);
+    const [localVideoTrack, setlocalVideoTrack] = useState<MediaStreamTrack | null>(null);
+    const videoRef = useRef<HTMLVideoElement>(null);
+
+    const [joined, setJoined] = useState(false);
+
+    const getCam = async () => {
+        const stream = await window.navigator.mediaDevices.getUserMedia({
+            video: true,
+            audio: true
+        })
+        // MediaStream
+        const audioTrack = stream.getAudioTracks()[0]
+        const videoTrack = stream.getVideoTracks()[0]
+        setLocalAudioTrack(audioTrack);
+        setlocalVideoTrack(videoTrack);
+        if (!videoRef.current) {
+            return;
+        }
+        videoRef.current.srcObject = new MediaStream([videoTrack])
+        videoRef.current.play();
+        // MediaStream
+    }
 
     useEffect(() => {
-        const initialize = async () => {
-            const stream = await navigator.mediaDevices.getUserMedia({
-                audio: true,
-                video: true
-            });
-            setLocalStream(stream);
-            setLocalAudioTrack(stream.getAudioTracks()[0]);
-            setLocalVideoTrack(stream.getVideoTracks()[0]);
+        if (videoRef && videoRef.current) {
+            getCam()
         }
+    }, [videoRef]);
 
-        initialize().catch(console.error);
+    if (!joined) {
+            
+    return <div>
+            <video autoPlay ref={videoRef}></video>
+            <input type="text" onChange={(e) => {
+                setName(e.target.value);
+            }}>
+            </input>
+            <button onClick={() => {
+                setJoined(true);
+            }}>Join</button>
+        </div>
+    }
 
-        return () => {
-            if (localStream) {
-                localStream.getTracks().forEach(track => track.stop());
-            }
-        }
-    }, [])
-
-    return <Room localAudioTrack={localAudioTrack} localVideoTrack={localVideoTrack} />
+    return <Room name={name} localAudioTrack={localAudioTrack} localVideoTrack={localVideoTrack} />
 }
