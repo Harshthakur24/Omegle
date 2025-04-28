@@ -32,8 +32,10 @@ export const Room = ({
     const localVideoRef = useRef<HTMLVideoElement | null>(null);
 
     useEffect(() => {
-        const socket = io(URL);
-        socket.on('send-offer', async ({ roomId }) => {
+        if (!socket) return; // Use socket state
+        const newSocket = io(URL);
+
+        newSocket.on('send-offer', async ({ roomId }) => {
             console.log("sending offer");
             setLobby(false);
             const pc = new RTCPeerConnection();
@@ -53,7 +55,7 @@ export const Room = ({
             pc.onicecandidate = async (e) => {
                 console.log("receiving ice candidate locally");
                 if (e.candidate) {
-                    socket.emit("add-ice-candidate", {
+                    newSocket.emit("add-ice-candidate", {
                         candidate: e.candidate,
                         type: "sender",
                         roomId
@@ -65,14 +67,14 @@ export const Room = ({
                 console.log("on negotiation needed, sending offer");
                 const sdp = await pc.createOffer();
                 await pc.setLocalDescription(sdp);
-                socket.emit("offer", {
+                newSocket.emit("offer", {
                     sdp,
                     roomId
                 })
             }
         });
 
-        socket.on("offer", async ({ roomId, sdp: remoteSdp }) => {
+        newSocket.on("offer", async ({ roomId, sdp: remoteSdp }) => {
             console.log("received offer");
             setLobby(false);
             const pc = new RTCPeerConnection();
@@ -103,14 +105,14 @@ export const Room = ({
                     return;
                 }
                 console.log("on ice candidate on receiving side");
-                socket.emit("add-ice-candidate", {
+                newSocket.emit("add-ice-candidate", {
                     candidate: e.candidate,
                     type: "receiver",
                     roomId
                 });
             }
 
-            socket.emit("answer", {
+            newSocket.emit("answer", {
                 roomId,
                 sdp: sdp
             });
@@ -133,7 +135,7 @@ export const Room = ({
             }, 5000);
         });
 
-        socket.on("answer", ({ sdp: remoteSdp }) => {
+        newSocket.on("answer", ({ sdp: remoteSdp }) => {
             setLobby(false);
             setSendingPc(pc => {
                 if (pc) {
@@ -144,11 +146,11 @@ export const Room = ({
             console.log("loop closed");
         });
 
-        socket.on("lobby", () => {
+        newSocket.on("lobby", () => {
             setLobby(true);
         });
 
-        socket.on("add-ice-candidate", ({ candidate, type }) => {
+        newSocket.on("add-ice-candidate", ({ candidate, type }) => {
             console.log("add ice candidate from remote");
             if (type === "sender") {
                 setReceivingPc(pc => {
@@ -167,13 +169,18 @@ export const Room = ({
             }
         });
 
-        setSocket(socket);
+        setSocket(newSocket);
 
-        // Cleanup function
         return () => {
-            socket.disconnect();
+            newSocket.disconnect();
+            if (sendingPc) {
+                sendingPc.close();
+            }
+            if (receivingPc) {
+                receivingPc.close();
+            }
         };
-    }, [name, localAudioTrack, localVideoTrack]);
+    }, [socket, localAudioTrack, localVideoTrack, sendingPc, receivingPc]);
 
     useEffect(() => {
         if (localVideoRef.current && localVideoTrack) {
