@@ -1,8 +1,8 @@
 import { useEffect, useRef, useState, useCallback } from "react";
 import { io } from "socket.io-client";
 
-// const URL = 'https://omegle-clone-68e8.onrender.com';
-const URL = 'http://localhost:3000';
+const URL = 'https://omegle-clone-68e8.onrender.com';
+// const URL = 'http://localhost:3000';
 
 const servers = {
   iceServers: [
