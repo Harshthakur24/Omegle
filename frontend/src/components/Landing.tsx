@@ -42,7 +42,7 @@ export const Landing = () => {
                         </sup>
                     </h1>
                     <p className="mt-4 text-xl text-gray-600">
-                        Connect with strangers around the world
+                        Connect with random people around the world
                     </p>
                 </header>
                 <div className="w-full max-w-md aspect-video relative overflow-hidden rounded-xl shadow-2xl border-4 border-white">
