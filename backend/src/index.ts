@@ -25,7 +25,7 @@ server.listen(3000, () => {
   console.log('listening on :3000');
 });
 
-const url = `https://omegle-clone-68e8.onrender.com/`;
+const url = `https://open-meet.vercel.app/`;
 const interval = 300000;
 
 function reloadWebsite() {
