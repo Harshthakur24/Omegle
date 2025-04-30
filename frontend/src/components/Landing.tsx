@@ -45,7 +45,7 @@ export const Landing = () => {
                         Connect with random people around the world
                     </p>
                 </header>
-                <div className="w-full max-w-md aspect-video relative overflow-hidden rounded-xl shadow-2xl border-4 border-white">
+                <div className="w-full max-w-sm aspect-video relative overflow-hidden rounded-xl shadow-2xl border-4 border-white">
                     <div className="absolute inset-0 bg-gradient-to-r from-indigo-500/20 to-purple-500/20 z-0"></div>
                     <video
                         className="w-full h-full object-cover z-10 relative"
