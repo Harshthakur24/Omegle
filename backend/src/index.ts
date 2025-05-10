@@ -4,9 +4,12 @@ import http from 'http';
 const server = http.createServer(app);
 import { Server } from "socket.io";
 import { UserManager } from './managers/UserManager';
+
 const io = new Server(server, {
   cors: {
-    origin: "*"
+    origin: "*",
+    methods: ["GET", "POST"],
+    credentials: true
   }
 });
 
@@ -14,29 +17,15 @@ const userManager = new UserManager();
 
 io.on('connection', (socket) => {
   console.log('a user connected');
-  userManager.addUser(socket)
+  userManager.addUser(socket);
+  
   socket.on("disconnect", () => {
     console.log('Disconnected');
     userManager.removeUser(socket.id);
-  })
+  });
 });
 
-server.listen(3000, () => {
-  console.log('listening on :3000');
+const PORT = process.env.PORT || 3000;
+server.listen(PORT, () => {
+  console.log(`Server listening on port ${PORT}`);
 });
-
-const url = `https://localhost:3000/`;
-const interval = 300000;
-
-function reloadWebsite() {
-  fetch(url, { method: 'GET' })
-    .then(response => {
-      console.log(`Reloaded at ${new Date().toISOString()}: Status Code ${response.status}`);
-    })
-    .catch(error => {
-      console.error(`Error reloading at ${new Date().toISOString()}:`, error.message);
-    });
-}
-
-
-setInterval(reloadWebsite, interval);
